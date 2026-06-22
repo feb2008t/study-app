@@ -21,7 +21,8 @@ records = response.data
 if records:
     data = pd.DataFrame(records)
 
-    st.dataframe(data)
+    display_data = data[["date", "subject", "minutes"]]
+    st.dataframe(display_data)
 
     total = data["minutes"].sum()
     st.write("合計勉強時間：", round(total / 60, 1), "時間")
