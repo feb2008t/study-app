@@ -2,9 +2,20 @@ import streamlit as st
 import pandas as pd
 from supabase_config import supabase
 
+if "user_id" not in st.session_state:
+    st.warning("先にログインしてください")
+    st.stop()
+
 st.title("勉強記録")
 
-response = supabase.table("study_logs").select("*").execute()
+response = (
+    supabase
+    .table("study_logs")
+    .select("*")
+    .eq("user_id", st.session_state["user_id"])
+    .execute()
+)
+
 records = response.data
 
 if records:
@@ -26,7 +37,14 @@ if records:
     if st.button("削除"):
         selected_id = choices[selected]
 
-        supabase.table("study_logs").delete().eq("id", selected_id).execute()
+        (
+            supabase
+            .table("study_logs")
+            .delete()
+            .eq("id", selected_id)
+            .eq("user_id", st.session_state["user_id"])
+            .execute()
+        )
 
         st.rerun()
 
