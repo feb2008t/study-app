@@ -15,11 +15,16 @@ if st.button("新規登録"):
 
         st.session_state["user_id"] = response.user.id
 
+        if response.session is not None:
+            st.session_state["access_token"] = response.session.access_token
+            st.session_state["refresh_token"] = response.session.refresh_token
+
         st.success("登録成功")
         st.write("user_id:", st.session_state["user_id"])
 
     except Exception as e:
         st.error(e)
+
 
 if st.button("ログイン"):
     try:
@@ -29,12 +34,15 @@ if st.button("ログイン"):
         })
 
         st.session_state["user_id"] = response.user.id
+        st.session_state["access_token"] = response.session.access_token
+        st.session_state["refresh_token"] = response.session.refresh_token
 
         st.success("ログイン成功")
         st.write("user_id:", st.session_state["user_id"])
 
     except Exception as e:
         st.error(e)
+
 
 if "user_id" in st.session_state:
     st.success("ログイン中")

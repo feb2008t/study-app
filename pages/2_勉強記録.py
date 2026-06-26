@@ -14,6 +14,19 @@ if "user_id" not in st.session_state:
     st.warning("先にログインしてください")
     st.stop()
 
+if (
+    "access_token" not in st.session_state
+    or
+    "refresh_token" not in st.session_state
+):
+    st.warning("ログイン情報がありません。もう一度ログインしてください。")
+    st.stop()
+
+supabase.auth.set_session(
+    st.session_state["access_token"],
+    st.session_state["refresh_token"]
+)
+
 st.title("勉強記録")
 
 response = (
