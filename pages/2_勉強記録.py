@@ -11,8 +11,10 @@ from analysis import show_goal_input
 from analysis import show_goal_progress
 
 if "user_id" not in st.session_state:
-    st.warning("先にログインしてください")
+    st.warning("ログイン情報がありません。もう一度ログインしてください。")
     st.stop()
+
+user_id = st.session_state["user_id"]
 
 if (
     "access_token" not in st.session_state
