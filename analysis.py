@@ -255,7 +255,7 @@ def show_goal_input(supabase, user_id):
         )
 
         st.session_state["goal_saved"] = True
-        st.rerun()
+        
 def show_goal_progress(supabase, user_id, daily_summary, subject_summary):
     st.subheader("🎯 今週の目標")
 
