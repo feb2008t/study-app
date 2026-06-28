@@ -235,6 +235,14 @@ def show_goal_input(supabase, user_id):
             goals[subject.strip()] = int(hours * 60)
 
     if st.button("次週の目標を保存"):
+        # 既存の次週目標を削除
+        supabase.table("weekly_goals") \
+            .delete() \
+            .eq("user_id", user_id) \
+            .eq("week_start_date", next_monday.isoformat()) \
+            .execute()
+
+        # 新しい次週目標を保存
         save_weekly_goals(
             supabase,
             user_id,
@@ -244,7 +252,6 @@ def show_goal_input(supabase, user_id):
 
         st.success("次週の目標を保存しました。")
         st.rerun()
-
 def show_goal_progress(supabase, user_id, daily_summary, subject_summary):
     st.subheader("🎯 今週の目標")
 
