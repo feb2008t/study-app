@@ -254,7 +254,7 @@ def show_goal_input(supabase, user_id):
             goals
         )
 
-        st.session_state["goal_saved"] = True
+        st.toast("次週の目標を保存しました。", icon="✅")
         
 def show_goal_progress(supabase, user_id, daily_summary, subject_summary):
     st.subheader("🎯 今週の目標")
