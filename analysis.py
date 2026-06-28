@@ -198,6 +198,10 @@ def show_goal_input(supabase, user_id):
 
     st.subheader("🎯 次週の目標設定")
 
+    if st.session_state.get("goal_saved"):
+        st.success("次週の目標を保存しました。")
+        st.session_state["goal_saved"] = False
+
     next_monday = get_next_week_monday()
 
     st.write(f"対象週：{next_monday} からの1週間")
@@ -250,7 +254,7 @@ def show_goal_input(supabase, user_id):
             goals
         )
 
-        st.success("次週の目標を保存しました。")
+        st.session_state["goal_saved"] = True
         st.rerun()
 def show_goal_progress(supabase, user_id, daily_summary, subject_summary):
     st.subheader("🎯 今週の目標")
