@@ -25,13 +25,11 @@ if "user_id" not in st.session_state:
                 })
 
                 st.session_state["user_id"] = response.user.id
-                st.success("登録成功")
-                st.session_state["user_id"] = response.user.id
                 st.session_state["access_token"] = response.session.access_token
                 st.session_state["refresh_token"] = response.session.refresh_token
-                st.success("ログイン成功")
+
+                st.success("登録成功")
                 st.rerun()
-                
 
             except Exception:
                 st.error("登録に失敗しました。メールアドレスやパスワードを確認してください。")
@@ -45,18 +43,14 @@ if "user_id" not in st.session_state:
                 })
 
                 st.session_state["user_id"] = response.user.id
-                st.success("ログイン成功")
-                st.session_state["user_id"] = response.user.id
                 st.session_state["access_token"] = response.session.access_token
                 st.session_state["refresh_token"] = response.session.refresh_token
-                st.success("登録成功")
+
+                st.success("ログイン成功")
                 st.rerun()
 
             except Exception:
                 st.error("メールアドレスまたはパスワードが違います。")
-
-
-        
 
     st.stop()
 
@@ -69,43 +63,50 @@ logs = response.data
 df = pd.DataFrame(logs)
 
 today = date.today()
+week_start = today - timedelta(days=today.weekday())
 
-if df.empty:
-    today_minutes = 0
-    week_minutes = 0
-    total_minutes = 0
-else:
+# 初期値
+today_minutes = 0
+week_minutes = 0
+week_hours = 0
+total_minutes = 0
+total_hours = 0
+goal_exists = False
+goal_hours = 0
+achievement = 0
+
+if not df.empty:
     df["date"] = pd.to_datetime(df["date"]).dt.date
 
     today_minutes = df[df["date"] == today]["minutes"].sum()
-    
-
-    week_start = today - timedelta(days=today.weekday())
     week_minutes = df[df["date"] >= week_start]["minutes"].sum()
-    week_hours=week_minutes/60
+    week_hours = week_minutes / 60
 
     total_minutes = df["minutes"].sum()
     total_hours = total_minutes / 60
 
-    goal_response = (
+# 今週の目標取得
+goal_response = (
     supabase.table("weekly_goals")
     .select("*")
     .eq("user_id", user_id)
     .eq("week_start_date", week_start.isoformat())
     .execute()
 )
-    goal_df = pd.DataFrame(goal_response.data)
-    if goal_df.empty:
-      goal_exists = False
-      goal_hours = 0
-    else:
-       goal_exists = True
-       goal_hours = goal_df["target_minutes"].sum() / 60
-    if goal_hours > 0:
-      achievement = week_hours / goal_hours
-    else:
-      achievement = 0
 
+goal_df = pd.DataFrame(goal_response.data)
+
+if goal_df.empty:
+    goal_exists = False
+    goal_hours = 0
+else:
+    goal_exists = True
+    goal_hours = goal_df["target_minutes"].sum() / 60
+
+if goal_hours > 0:
+    achievement = week_hours / goal_hours
+else:
+    achievement = 0
 
 # 上部カード
 col1, col2, col3 = st.columns(3)
@@ -124,8 +125,6 @@ st.subheader("🎯 今週の目標")
 if not goal_exists:
     st.info("今週の目標は設定されませんでした。")
 else:
-    achievement = week_hours / goal_hours
-
     st.progress(min(achievement, 1.0))
     st.write(f"**{week_hours:.1f} / {goal_hours:.1f} 時間**")
     st.write(f"達成率：{achievement*100:.0f}%")
