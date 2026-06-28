@@ -78,7 +78,7 @@ else:
     df["date"] = pd.to_datetime(df["date"]).dt.date
 
     today_minutes = df[df["date"] == today]["minutes"].sum()
-    today_hours=today_minutes/60
+    
 
     week_start = today - timedelta(days=today.weekday())
     week_minutes = df[df["date"] >= week_start]["minutes"].sum()
@@ -87,15 +87,45 @@ else:
     total_minutes = df["minutes"].sum()
     total_hours = total_minutes / 60
 
+    goal_response = (
+    supabase.table("weekly_goals")
+    .select("*")
+    .eq("user_id", user_id)
+    .eq("week_start_date", week_start.isoformat())
+    .execute()
+)
+    goal_df = pd.DataFrame(goal_response.data)
+    if goal_df.empty:
+      goal_exists = False
+      goal_hours = 0
+    else:
+       goal_exists = True
+       goal_hours = goal_df["target_minutes"].sum() / 60
+    if goal_hours > 0:
+      achievement = week_hours / goal_hours
+    else:
+      achievement = 0
+
+
 # 上部カード
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    st.metric("🔥 今日", f"{today_hours:1f} 時間")
+    st.metric("🔥 今日", f"{today_minutes} 分")
 
 with col2:
-    st.metric("📅 今週", f"{week_hours:1f} 時間")
+    st.metric("📅 今週", f"{week_hours:.1f} 時間")
 
 with col3:
     st.metric("📖 累計", f"{total_hours:.1f} 時間")
 
+st.subheader("🎯 今週の目標")
+
+if not goal_exists:
+    st.info("今週の目標は設定されませんでした。")
+else:
+    achievement = week_hours / goal_hours
+
+    st.progress(min(achievement, 1.0))
+    st.write(f"**{week_hours:.1f} / {goal_hours:.1f} 時間**")
+    st.write(f"達成率：{achievement*100:.0f}%")
